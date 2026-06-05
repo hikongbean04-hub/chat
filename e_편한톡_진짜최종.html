@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>E-편한톡 현장 운영지원 챗봇 v5</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/dist/tabler-icons.min.css">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{--ky:#FAE100;--kyd:#E5CE00;--kb:#3A1D1D;--chat-bg:#ADC4D8;--hdr:#7FA8C2;--bme:#FAE100;--bbot:#fff;--inp:#E4ECF2;--qbg:rgba(255,255,255,.82);--sh:0 1px 3px rgba(0,0,0,.10);--tc:#4A6E87;--sc:#2C3E50;--tf-red:#8B1A1A;--tf-redbg:#FCEBEB}
+body{font-family:'Apple SD Gothic Neo','Malgun Gothic',-apple-system,BlinkMacSystemFont,sans-serif;background:#d0d8de;display:flex;align-items:center;justify-content:center;min-height:100vh}
+#app{width:390px;height:790px;display:flex;flex-direction:column;background:var(--chat-bg);border-radius:20px;overflow:hidden;box-shadow:0 8px 40px rgba(0,0,0,.28);position:relative}
+.hdr{background:var(--hdr);padding:14px 16px 12px;display:flex;align-items:center;gap:10px;flex-shrink:0;z-index:10;position:relative}
+.hdr-av{width:40px;height:40px;border-radius:10px;background:var(--ky);display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0}
+.hdr-info{flex:1}.hdr-name{font-size:15px;font-weight:700;color:#fff}.hdr-sub{font-size:11px;color:rgba(255,255,255,.78);margin-top:1px}
+.hdr-icons{display:flex;gap:16px;align-items:center}
+.hdr-ic{color:rgba(255,255,255,.9);font-size:21px;cursor:pointer;padding:3px;border-radius:6px;transition:background .15s,color .15s;line-height:1}
+.hdr-ic:hover{background:rgba(255,255,255,.15)}.hdr-ic.on{color:var(--ky);background:rgba(255,255,255,.18)}
+.srch-bar{background:#6A97B5;display:flex;align-items:center;gap:8px;padding:0 12px;height:0;overflow:hidden;flex-shrink:0;transition:height .25s ease}
+.srch-bar.open{height:46px}
+.srch-bar input{flex:1;border:none;background:rgba(255,255,255,.22);border-radius:16px;padding:7px 13px;font-size:13px;color:#fff;outline:none;font-family:inherit}
+.srch-bar input::placeholder{color:rgba(255,255,255,.65);font-size:12.5px}
+.srch-close{background:rgba(255,255,255,.18);border:none;border-radius:50%;width:26px;height:26px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:#fff;flex-shrink:0;transition:background .12s}
+.srch-close:hover{background:rgba(255,255,255,.3)}
+.msgs{flex:1;overflow-y:auto;padding:14px 12px 6px;display:flex;flex-direction:column;gap:10px;scroll-behavior:smooth}
+.msgs::-webkit-scrollbar{width:4px}.msgs::-webkit-scrollbar-thumb{background:rgba(0,0,0,.15);border-radius:2px}
+.mr{display:flex;align-items:flex-start;gap:7px}.mr.me{flex-direction:row-reverse}
+.av{width:36px;height:36px;border-radius:9px;background:var(--ky);display:flex;align-items:center;justify-content:center;font-size:19px;flex-shrink:0}
+.mc{display:flex;flex-direction:column;gap:3px;max-width:76%}.mr.me .mc{align-items:flex-end}
+.sn{font-size:11px;color:var(--sc);font-weight:600;padding-left:1px}
+.bbl{padding:9px 12px;border-radius:4px 14px 14px 14px;font-size:13.5px;line-height:1.6;color:#1E1E1E;word-break:break-word;white-space:pre-wrap;background:var(--bbot);box-shadow:var(--sh)}
+.mr.me .bbl{background:var(--bme);border-radius:14px 4px 14px 14px;color:var(--kb)}
+.mt{font-size:10px;color:var(--tc);padding:0 2px;align-self:flex-end}.mr.me .mt{text-align:right}
+.tbbl{background:var(--bbot);border-radius:4px 14px 14px 14px;padding:11px 14px;display:flex;align-items:center;gap:5px;box-shadow:var(--sh)}
+.tbbl span{width:7px;height:7px;border-radius:50%;background:#AAB4BC;display:inline-block;animation:bnc 1.2s infinite ease-in-out}
+.tbbl span:nth-child(2){animation-delay:.18s}.tbbl span:nth-child(3){animation-delay:.36s}
+@keyframes bnc{0%,80%,100%{transform:translateY(0)}40%{transform:translateY(-6px)}}
+.qbtns{display:flex;flex-wrap:nowrap;gap:6px;padding:8px 12px 4px;overflow-x:auto;flex-shrink:0}
+.qbtns::-webkit-scrollbar{display:none}
+.qb{background:var(--qbg);border:0.5px solid rgba(0,0,0,.12);border-radius:16px;padding:6px 12px;font-size:12px;color:#2C2C2A;cursor:pointer;white-space:nowrap;font-family:inherit;transition:background .12s;flex-shrink:0}
+.qb:hover{background:#fff}.qb.hot{background:rgba(250,225,0,.7);border-color:rgba(200,166,0,.4)}.qb.hot:hover{background:rgba(250,225,0,.9)}
+.qb.tf{background:rgba(139,26,26,.12);border-color:rgba(139,26,26,.25);color:#6B1010}.qb.tf:hover{background:rgba(139,26,26,.2)}
+.inp-area{background:var(--inp);padding:8px 10px;display:flex;align-items:flex-end;gap:8px;flex-shrink:0;border-top:0.5px solid rgba(0,0,0,.08)}
+.inp-area textarea{flex:1;border:none;background:#fff;border-radius:20px;padding:9px 14px;font-size:13.5px;resize:none;outline:none;font-family:inherit;min-height:38px;max-height:90px;line-height:1.5;color:#1E1E1E;box-shadow:0 1px 3px rgba(0,0,0,.08)}
+.sndbtn{width:38px;height:38px;border-radius:50%;background:var(--ky);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:background .12s;box-shadow:0 1px 4px rgba(0,0,0,.12)}
+.sndbtn:hover{background:var(--kyd)}.sndbtn i{font-size:19px;color:var(--kb)}
+.card{background:#fff;border-radius:12px;padding:11px 13px;margin-top:5px;border:0.5px solid rgba(0,0,0,.09);box-shadow:0 1px 4px rgba(0,0,0,.06)}
+.ctitle{font-size:13px;font-weight:700;color:#1A2733;margin-bottom:9px;padding-bottom:7px;border-bottom:0.5px solid rgba(0,0,0,.08)}
+.mbtn{display:flex;align-items:center;gap:8px;width:100%;background:#F5F8FA;border:0.5px solid rgba(0,0,0,.09);border-radius:8px;padding:8px 10px;font-size:13px;text-align:left;color:#1E1E1E;cursor:pointer;margin-bottom:5px;font-family:inherit;transition:background .12s}
+.mbtn:last-child{margin-bottom:0}.mbtn:hover{background:#EBF1F6}.mbtn i{font-size:16px;color:#4A7FA0;flex-shrink:0}
+.mbtn.tf-btn i{color:var(--tf-red)}.mbtn.tf-btn{border-left:2px solid var(--tf-red)}
+.cli{display:flex;align-items:flex-start;gap:9px;padding:5px 0;font-size:13px;color:#2C2C2A;cursor:pointer;border-bottom:0.5px solid rgba(0,0,0,.05);transition:color .15s}
+.cli:last-child{border-bottom:none}.cli input[type=checkbox]{width:16px;height:16px;cursor:pointer;accent-color:#1A7A4F;flex-shrink:0;margin-top:1px}
+.cli.chk{color:#AAB4BC;text-decoration:line-through}.cl-note{font-size:11px;color:#B05E10;margin-top:2px}
+.cl-act{display:flex;gap:7px;margin-top:10px;padding-top:8px;border-top:0.5px solid rgba(0,0,0,.08)}
+.cl-actbtn{flex:1;padding:7px 4px;font-size:12px;border-radius:8px;border:0.5px solid rgba(0,0,0,.12);background:#F5F8FA;color:#1E1E1E;cursor:pointer;font-family:inherit;transition:background .12s;text-align:center}
+.cl-actbtn:hover{background:#EBF1F6}.cl-actbtn.danger{background:#FCEBEB;border-color:rgba(163,45,45,.2);color:#A32D2D}.cl-actbtn.danger:hover{background:#f7d6d6}
+.badge{display:inline-block;font-size:10.5px;padding:2px 7px;border-radius:10px;font-weight:600;flex-shrink:0}
+.red{background:#FCEBEB;color:#A32D2D}.amber{background:#FAEEDA;color:#854F0B}.green{background:#EAF3DE;color:#3B6D11}.blue{background:#E6F1FB;color:#185FA5}
+.ifbtn{display:flex;align-items:center;width:100%;background:#F5F8FA;border:0.5px solid rgba(0,0,0,.09);border-radius:8px;padding:8px 10px;font-size:12.5px;text-align:left;color:#1E1E1E;cursor:pointer;margin-bottom:5px;font-family:inherit;transition:background .12s}
+.ifbtn:last-child{margin-bottom:0}.ifbtn:hover{background:#EBF1F6}.ifbtn i{font-size:15px;margin-right:7px;color:#4A7FA0;flex-shrink:0}
+.bpcard{background:#F8FAFC;border-radius:10px;padding:10px 12px;margin-bottom:8px;border-left:3px solid #4A7FA0}
+.bpcard:last-child{margin-bottom:0}.bp-tag{font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px}
+.bp-title{font-size:13px;font-weight:700;color:#1A2733;margin-bottom:5px}.bp-result{font-size:12px;color:#2E6B4A;font-weight:600;margin-bottom:8px}
+.bp-detbtn{width:100%;padding:6px;font-size:12px;background:#fff;border:0.5px solid rgba(0,0,0,.12);border-radius:7px;cursor:pointer;font-family:inherit;transition:background .12s;font-weight:600}
+.bp-detbtn:hover{background:#EBF1F6}
+.bpd-step{display:flex;align-items:flex-start;gap:8px;padding:4px 0;font-size:12.5px;color:#1E1E1E;border-bottom:0.5px solid rgba(0,0,0,.05)}
+.bpd-step:last-child{border-bottom:none}
+.bpd-num{width:20px;height:20px;border-radius:50%;background:var(--ky);color:var(--kb);font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px}
+.tl{display:flex;align-items:flex-start;gap:0;margin:12px 0 8px}
+.tl-step{flex:1;display:flex;flex-direction:column;align-items:center;position:relative}
+.tl-step:not(:last-child)::after{content:'';position:absolute;top:14px;left:50%;width:100%;height:2px;background:#D4E4EF;z-index:0}
+.tl-step.done:not(:last-child)::after{background:#2E7D5C}
+.tl-dot{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;position:relative;z-index:1;border:2px solid #D4E4EF;background:#fff}
+.tl-step.done .tl-dot{background:#2E7D5C;border-color:#2E7D5C;color:#fff}
+.tl-step.active .tl-dot{background:var(--ky);border-color:#C8A600;color:var(--kb);box-shadow:0 0 0 3px rgba(250,225,0,.3)}
+.tl-step.pending .tl-dot{background:#F0F4F7;border-color:#C8D8E4;color:#9AACB8}
+.tl-lbl{font-size:10px;color:#5F7A8F;margin-top:5px;text-align:center;line-height:1.3}
+.tl-step.done .tl-lbl{color:#2E7D5C;font-weight:600}.tl-step.active .tl-lbl{color:#B08800;font-weight:700}
+.rnr-row{display:flex;gap:8px;padding:5px 0;font-size:12.5px;border-bottom:0.5px solid rgba(0,0,0,.05)}
+.rnr-row:last-child{border-bottom:none}.rnr-lbl{color:#5F7A8F;min-width:68px;font-weight:600;flex-shrink:0}.rnr-val{color:#1E1E1E;line-height:1.5}
+.step-row{display:flex;align-items:flex-start;gap:9px;padding:5px 0;font-size:13px;color:#1E1E1E;border-bottom:0.5px solid rgba(0,0,0,.05)}
+.step-row:last-child{border-bottom:none}
+.step-num{width:22px;height:22px;border-radius:50%;background:var(--ky);color:var(--kb);font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px}
+.rpath{display:flex;align-items:center;gap:4px;flex-wrap:wrap;margin-top:6px}
+.rpnode{background:#EEF3F7;border:0.5px solid rgba(0,0,0,.10);border-radius:6px;padding:4px 9px;font-size:12px;font-weight:600;color:#1A3A52}
+.rparrow{color:#7FA8C2;font-size:14px}
+.ddiv{text-align:center;font-size:11px;color:#4A6E87;background:rgba(255,255,255,.4);border-radius:10px;padding:4px 14px;align-self:center;margin:2px 0}
+.ai-cat{display:inline-flex;align-items:center;gap:5px;padding:3px 10px;border-radius:12px;font-size:11.5px;font-weight:700;margin-bottom:8px}
+.ai-section{margin-bottom:10px}.ai-sec-title{font-size:12px;font-weight:700;color:#2C3E50;margin-bottom:5px;display:flex;align-items:center;gap:5px}
+.ai-item{font-size:12.5px;color:#1E1E1E;padding:2px 0 2px 10px;border-left:2px solid #D4E4EF;margin-bottom:3px;line-height:1.5}
+.ai-warn{background:#FCEBEB;border-left:3px solid #A32D2D;border-radius:0 7px 7px 0;padding:8px 10px;margin-top:8px;font-size:12.5px;color:#A32D2D;font-weight:600;line-height:1.5}
+.ai-actions{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px;padding-top:8px;border-top:0.5px solid rgba(0,0,0,.08)}
+.ai-actbtn{padding:6px 10px;font-size:12px;border-radius:8px;border:0.5px solid rgba(0,0,0,.12);background:#F5F8FA;color:#2C2C2A;cursor:pointer;font-family:inherit;transition:background .12s;font-weight:500}
+.ai-actbtn:hover{background:#EBF1F6}
+.safe-bbl{background:#FCEBEB;border-left:3px solid #A32D2D;border-radius:4px 12px 12px 12px;padding:10px 13px;font-size:13px;color:#7A1A1A;line-height:1.6;box-shadow:var(--sh)}
+.kw-chip{display:inline-block;background:#EEF3F7;border-radius:4px;padding:1px 5px;font-size:11.5px;color:#185FA5;font-weight:600;margin:1px}
+.srch-ref-item{padding:5px 0;font-size:12.5px;color:#1E1E1E;border-bottom:0.5px solid rgba(0,0,0,.05);display:flex;align-items:flex-start;gap:6px}
+.srch-ref-item:last-child{border-bottom:none}.srch-ref-num{font-size:11px;font-weight:700;color:#4A7FA0;flex-shrink:0;margin-top:2px}
+/* ── TF specific styles ── */
+.tf-member{display:flex;align-items:flex-start;gap:9px;padding:7px 0;border-bottom:0.5px solid rgba(0,0,0,.06)}
+.tf-member:last-child{border-bottom:none}
+.tf-role-badge{font-size:10.5px;font-weight:700;border-radius:5px;padding:2px 7px;flex-shrink:0;margin-top:2px;white-space:nowrap}
+.tf-member-info{flex:1}
+.tf-member-name{font-size:13px;font-weight:700;color:#1A2733;line-height:1.4}
+.tf-member-desc{font-size:11.5px;color:#5F7A8F;margin-top:1px}
+.tf-step-card{border-radius:9px;overflow:hidden;margin-bottom:8px;border:0.5px solid rgba(0,0,0,.08)}
+.tf-step-card:last-child{margin-bottom:0}
+.tf-step-hdr{background:var(--tf-red);padding:7px 11px;display:flex;align-items:center;justify-content:space-between}
+.tf-step-label{font-size:10.5px;color:rgba(255,255,255,.75);font-weight:600;letter-spacing:.5px}
+.tf-step-title{font-size:13px;font-weight:700;color:#fff}
+.tf-step-period{font-size:11px;background:rgba(255,255,255,.22);border-radius:10px;padding:2px 8px;color:#fff;white-space:nowrap}
+.tf-step-body{padding:8px 11px;background:#fff}
+.tf-step-item{font-size:12px;color:#1E1E1E;padding:2px 0 2px 10px;border-left:2px solid #DDB5B5;margin-bottom:2px;line-height:1.5}
+.tf-output-row{display:flex;align-items:center;gap:8px;padding:5px 0;font-size:12.5px;color:#1E1E1E;border-bottom:0.5px solid rgba(0,0,0,.05)}
+.tf-output-row:last-child{border-bottom:none}
+.tf-output-num{width:20px;height:20px;border-radius:50%;background:var(--tf-red);color:#fff;font-size:10.5px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.tf-result-row{display:flex;align-items:flex-start;gap:9px;padding:7px 0;border-bottom:0.5px solid rgba(0,0,0,.05)}
+.tf-result-row:last-child{border-bottom:none}
+.tf-result-icon{font-size:20px;flex-shrink:0;width:26px;text-align:center}
+.tf-result-title{font-size:13px;font-weight:700;color:#1A2733;margin-bottom:2px}
+.tf-result-desc{font-size:11.5px;color:#5F7A8F}
+/* ── Menu Overlay / Panel ── */
+.menu-ov{position:absolute;inset:0;background:rgba(0,0,0,0);z-index:98;pointer-events:none;transition:background .25s ease;border-radius:20px}
+.menu-ov.open{background:rgba(0,0,0,.45);pointer-events:all}
+.menu-pnl{position:absolute;top:0;right:-300px;width:300px;height:100%;background:#fff;z-index:99;transition:right .28s cubic-bezier(.4,0,.2,1);display:flex;flex-direction:column;border-radius:0 20px 20px 0}
+.menu-pnl.open{right:0}
+.mpnl-hdr{background:var(--hdr);padding:15px 16px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;border-radius:0 20px 0 0}
+.mpnl-hdr-left{display:flex;align-items:center;gap:9px}
+.mpnl-hdr-av{width:32px;height:32px;border-radius:8px;background:var(--ky);display:flex;align-items:center;justify-content:center;font-size:17px}
+.mpnl-title{font-size:14px;font-weight:700;color:#fff}
+.mpnl-close{background:rgba(255,255,255,.18);border:none;border-radius:50%;width:28px;height:28px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:#fff;font-size:16px;transition:background .12s;flex-shrink:0}
+.mpnl-close:hover{background:rgba(255,255,255,.32)}
+.mpnl-body{flex:1;overflow-y:auto;padding:8px 0}.mpnl-body::-webkit-scrollbar{width:3px}.mpnl-body::-webkit-scrollbar-thumb{background:rgba(0,0,0,.12);border-radius:2px}
+.mpnl-item{display:flex;align-items:center;gap:11px;padding:12px 16px;font-size:13.5px;color:#1E1E1E;cursor:pointer;transition:background .12s;border-bottom:0.5px solid rgba(0,0,0,.05)}
+.mpnl-item:last-child{border-bottom:none}.mpnl-item:hover{background:#F0F5F9}
+.mpnl-item i{font-size:18px;color:#4A7FA0;flex-shrink:0;width:22px;text-align:center}
+.mpnl-item.tf-item i{color:var(--tf-red)}.mpnl-item.tf-item{border-left:3px solid var(--tf-red);padding-left:13px}
+.mpnl-item-arrow{margin-left:auto;color:#B0C4D0;font-size:15px}
+.mpnl-ft{padding:14px 16px;font-size:11.5px;color:#5F7A8F;background:#F8FAFC;border-top:0.5px solid rgba(0,0,0,.08);line-height:1.6;border-radius:0 0 20px 0}
+.mpnl-ft-logo{font-size:12px;font-weight:700;color:#7FA8C2;margin-bottom:4px;display:flex;align-items:center;gap:5px}
+</style>
+</head>
+<body>
+<div id="app">
+  <div class="hdr">
+    <div class="hdr-av">🏗</div>
+    <div class="hdr-info"><div class="hdr-name">E-편한톡</div><div class="hdr-sub">이랜드건설 현장 운영지원 챗봇</div></div>
+    <div class="hdr-icons">
+      <i class="ti ti-search hdr-ic" id="srch-icon" onclick="toggleSrch()" title="매뉴얼 검색"></i>
+      <i class="ti ti-menu-2 hdr-ic" id="menu-icon" onclick="toggleMenu()" title="전체 메뉴"></i>
+    </div>
+  </div>
+  <div class="srch-bar" id="srch-bar">
+    <i class="ti ti-search" style="color:rgba(255,255,255,.8);font-size:16px;flex-shrink:0"></i>
+    <input id="srch-inp" placeholder="매뉴얼에서 검색할 내용을 입력하세요" onkeydown="srchKey(event)">
+    <button class="srch-close" onclick="closeSrch()"><i class="ti ti-x" style="font-size:14px"></i></button>
+  </div>
+  <div class="msgs" id="msgs">
+    <div class="ddiv">2025년 1월 15일 수요일</div>
+    <div class="mr">
+      <div class="av">🏗</div>
+      <div class="mc">
+        <div class="sn">E-편한톡</div>
+        <div class="bbl">안녕하세요. 이랜드건설 현장 운영지원 챗봇 <b>E-편한톡</b>입니다.
+현장 매뉴얼북 기반으로 공정·체크리스트·R&amp;R·사례·온보딩을 즉시 안내합니다.
+<span style="font-size:12px;color:#5F7A8F">반복 문의는 챗봇이 1차 응답하고, 예외·승인 사안만 담당자에게 연결합니다.</span></div>
+        <div class="card" style="min-width:240px">
+          <div class="ctitle">📋 주요 기능 메뉴</div>
+          <button class="mbtn tf-btn" onclick="sel('tf')"><i class="ti ti-users-group"></i>현장 TF 구성 및 운영 방식</button>
+          <button class="mbtn" onclick="sel('standard')"><i class="ti ti-ruler-2"></i>공정별 표준 운영 프로세스</button>
+          <button class="mbtn" onclick="sel('checklist')"><i class="ti ti-checkbox"></i>현장 적용 체크리스트</button>
+          <button class="mbtn" onclick="sel('rnr')"><i class="ti ti-users"></i>R&amp;R 가이드</button>
+          <button class="mbtn" onclick="sel('cases')"><i class="ti ti-database"></i>현장 문제 해결 사례 DB</button>
+          <button class="mbtn" onclick="sel('best')"><i class="ti ti-award"></i>현장 우수 사례 아카이브</button>
+          <button class="mbtn" onclick="sel('onboarding')"><i class="ti ti-user-plus"></i>신규 인력 현장 적응 가이드</button>
+          <button class="mbtn" onclick="sel('issue')"><i class="ti ti-alert-triangle"></i>현장 이슈 접수</button>
+          <button class="mbtn" onclick="sel('status')"><i class="ti ti-list-check"></i>처리 상태 조회</button>
+          <button class="mbtn" onclick="sel('report')"><i class="ti ti-sitemap"></i>담당자 / 보고 체계 확인</button>
+        </div>
+        <div class="mt">오전 9:00</div>
+      </div>
+    </div>
+  </div>
+  <div class="qbtns">
+    <button class="qb tf" onclick="qs('TF 구성 알려줘')">TF 운영 방식</button>
+    <button class="qb" onclick="qs('콘크리트 타설 기준 알려줘')">콘크리트 타설</button>
+    <button class="qb" onclick="qs('콜드조인트 위험 시 어떻게 해')">콜드조인트</button>
+    <button class="qb" onclick="qs('오늘 일일 점검 체크리스트')">일일 점검</button>
+    <button class="qb" onclick="qs('안전담당 승인 권한')">안전담당 권한</button>
+    <button class="qb" onclick="qs('신규 반장 첫 3일 가이드')">신규 반장 가이드</button>
+    <button class="qb hot" onclick="sel('status')">처리 상태 조회</button>
+    <button class="qb hot" onclick="sel('issue')">이슈 접수</button>
+  </div>
+  <div class="inp-area">
+    <textarea id="mi" placeholder="메시지를 입력하세요..." rows="1" onkeydown="hk(event)" oninput="ar(this)"></textarea>
+    <button class="sndbtn" onclick="send()"><i class="ti ti-arrow-up"></i></button>
+  </div>
+  <div class="menu-ov" id="menu-ov" onclick="closeMenu()"></div>
+  <div class="menu-pnl" id="menu-pnl">
+    <div class="mpnl-hdr">
+      <div class="mpnl-hdr-left"><div class="mpnl-hdr-av">🏗</div><div class="mpnl-title">E-편한톡 전체 메뉴</div></div>
+      <button class="mpnl-close" onclick="closeMenu()"><i class="ti ti-x"></i></button>
+    </div>
+    <div class="mpnl-body">
+      <div class="mpnl-item tf-item" onclick="menuSel('tf')"><i class="ti ti-users-group"></i><span>현장 TF 구성 및 운영 방식</span><i class="ti ti-chevron-right mpnl-item-arrow"></i></div>
+      <div class="mpnl-item" onclick="menuSel('standard')"><i class="ti ti-ruler-2"></i><span>공정별 표준 운영 프로세스</span><i class="ti ti-chevron-right mpnl-item-arrow"></i></div>
+      <div class="mpnl-item" onclick="menuSel('checklist')"><i class="ti ti-checkbox"></i><span>현장 적용 체크리스트</span><i class="ti ti-chevron-right mpnl-item-arrow"></i></div>
+      <div class="mpnl-item" onclick="menuSel('rnr')"><i class="ti ti-users"></i><span>R&amp;R 가이드</span><i class="ti ti-chevron-right mpnl-item-arrow"></i></div>
+      <div class="mpnl-item" onclick="menuSel('cases')"><i class="ti ti-database"></i><span>현장 문제 해결 사례 DB</span><i class="ti ti-chevron-right mpnl-item-arrow"></i></div>
+      <div class="mpnl-item" onclick="menuSel('best')"><i class="ti ti-award"></i><span>현장 우수 사례 아카이브</span><i class="ti ti-chevron-right mpnl-item-arrow"></i></div>
+      <div class="mpnl-item" onclick="menuSel('onboarding')"><i class="ti ti-user-plus"></i><span>신규 인력 현장 적응 가이드</span><i class="ti ti-chevron-right mpnl-item-arrow"></i></div>
+      <div class="mpnl-item" onclick="menuSel('issue')"><i class="ti ti-alert-triangle"></i><span>현장 이슈 접수</span><i class="ti ti-chevron-right mpnl-item-arrow"></i></div>
+      <div class="mpnl-item" onclick="menuSel('status')"><i class="ti ti-list-check"></i><span>처리 상태 조회</span><i class="ti ti-chevron-right mpnl-item-arrow"></i></div>
+      <div class="mpnl-item" onclick="menuSel('report')"><i class="ti ti-sitemap"></i><span>담당자 / 보고 체계 확인</span><i class="ti ti-chevron-right mpnl-item-arrow"></i></div>
+    </div>
+    <div class="mpnl-ft">
+      <div class="mpnl-ft-logo"><i class="ti ti-building" style="font-size:13px"></i>이랜드건설</div>
+      반복 문의는 챗봇이 1차 응답하고, 예외 상황·승인 필요 사안만 담당자에게 연결합니다.
+    </div>
+  </div>
+</div>
+
+<script>
+// ═══ UTILS ═══
+function gt(){const n=new Date();let h=n.getHours(),m=n.getMinutes();return`${h>=12?'오후':'오전'} ${h%12||12}:${String(m).padStart(2,'0')}`}
+function esc(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>').replace(/\*\*(.*?)\*\*/g,'<b>$1</b>')}
+function ar(el){el.style.height='auto';el.style.height=Math.min(el.scrollHeight,90)+'px'}
+function hk(e){if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();send()}}
+function sb(){const m=document.getElementById('msgs');m.scrollTop=m.scrollHeight}
+// ═══ MESSAGE BUILDERS ═══
+function aum(text){const m=document.getElementById('msgs');const r=document.createElement('div');r.className='mr me';r.innerHTML=`<div class="mc"><div class="bbl">${esc(text)}</div><div class="mt">${gt()}</div></div>`;m.appendChild(r);sb()}
+function abm(html){const m=document.getElementById('msgs');const r=document.createElement('div');r.className='mr';r.innerHTML=`<div class="av">🏗</div><div class="mc"><div class="sn">E-편한톡</div>${html}<div class="mt">${gt()}</div></div>`;m.appendChild(r);sb()}
+function st(){const m=document.getElementById('msgs');const r=document.createElement('div');r.className='mr';r.id='tr';r.innerHTML=`<div class="av">🏗</div><div class="mc"><div class="sn">E-편한톡</div><div class="tbbl"><span></span><span></span><span></span></div></div>`;m.appendChild(r);sb()}
+function rt(){const t=document.getElementById('tr');if(t)t.remove()}
+function rsp(fn,d){st();setTimeout(()=>{rt();fn();},d||900)}
+// ═══ SEARCH ═══
+const SRCH_DB=[
+  {kws:['TF','매뉴얼북','매뉴얼 제작','숙련자','표준화','TF 구성'],q:'TF 구성 및 운영 방식',refs:['현장 TF 구성 및 운영 방식 > TF 구성원 4가지 역할','현장 TF 구성 및 운영 방식 > 운영 프로세스 4단계','현장 우수 사례 아카이브 > 신규 반장 온보딩 키트'],btns:[{l:'TF 구성 보기',f:"sel('tf')"},{l:'우수 사례 아카이브',f:"sel('best')"},{l:'R&R 가이드',f:"sel('rnr')"}]},
+  {kws:['콘크리트','타설'],q:'콘크리트 타설',refs:['공정별 표준 운영 프로세스 > 콘크리트 타설 공정 (5단계)','현장 적용 체크리스트 > 레미콘 배합 설계 슬럼프 적합 여부','현장 문제 해결 사례 DB > 레미콘 지연 / 콜드조인트 대응'],btns:[{l:'콘크리트 타설 기준',f:"aum('콘크리트 타설 기준');rsp(showConcrete,900)"},{l:'일일 점검 체크리스트',f:"showCL('daily')"},{l:'콜드조인트 대응',f:"showCase('coldjoint')"}]},
+  {kws:['콜드조인트','레미콘'],q:'콜드조인트 / 레미콘',refs:['현장 문제 해결 사례 DB > 레미콘 지연 / 콜드조인트','공정별 표준 운영 프로세스 > 콘크리트 타설 (2시간 이내 연속 타설)','현장 적용 체크리스트 > 진동기 작동 상태 및 예비 확보'],btns:[{l:'콜드조인트 대응 사례',f:"showCase('coldjoint')"},{l:'타설 기준 보기',f:"aum('콘크리트 타설 기준');rsp(showConcrete,900)"},{l:'이슈 접수',f:"sel('issue')"}]},
+  {kws:['안전','작업중지','고소작업','위험'],q:'안전 / 위험 / 작업중지',refs:['안전관리 표준 프로세스 > 일일 안전 루틴','현장 적용 체크리스트 > 안전 점검 체크리스트','R&R 가이드 > 안전담당 승인 권한'],btns:[{l:'안전 체크리스트',f:"showCL('safety')"},{l:'안전관리 프로세스',f:"aum('안전관리 프로세스');rsp(showSafetyProc,900)"},{l:'보고 체계 확인',f:"showReport()"}]},
+  {kws:['체크리스트','일일 점검'],q:'체크리스트',refs:['현장 적용 체크리스트 > 일일 점검 체크리스트 (10개 항목)','현장 적용 체크리스트 > 안전 점검 체크리스트','현장 적용 체크리스트 > 인수인계 체크리스트'],btns:[{l:'일일 점검',f:"showCL('daily')"},{l:'안전 점검',f:"showCL('safety')"},{l:'인수인계',f:"showCL('handover')"}]},
+  {kws:['r&r','역할','권한','안전담당'],q:'R&R / 역할 / 권한',refs:['R&R 가이드 > 현장소장 (승인 권한·보고 체계)','R&R 가이드 > 안전담당 (위험작업 작업중지명령)','담당자 / 보고 체계 확인'],btns:[{l:'R&R 가이드',f:"sel('rnr')"},{l:'안전담당 R&R',f:"showRnr('안전담당')"},{l:'보고 체계 확인',f:"showReport()"}]},
+  {kws:['신규','온보딩','반장'],q:'신규 인력 / 온보딩',refs:['신규 인력 현장 적응 가이드 > 첫 3일 적응 로드맵','현장 적용 체크리스트 > 1주 후 자가 점검','현장 우수 사례 > 신규 반장 온보딩 키트'],btns:[{l:'신규 인력 가이드',f:"sel('onboarding')"},{l:'인수인계 체크리스트',f:"showCL('handover')"},{l:'우수 사례',f:"sel('best')"}]},
+  {kws:['이슈','접수','상태','처리'],q:'이슈 접수 / 처리 상태',refs:['현장 이슈 접수 > 유형별 이슈 선택 (9가지)','처리 상태 조회 > 4단계 타임라인','담당자 / 보고 체계 확인'],btns:[{l:'이슈 접수',f:"sel('issue')"},{l:'처리 상태 조회',f:"showStatus()"},{l:'보고 체계',f:"showReport()"}]},
+  {kws:['사면 붕괴','터파기'],q:'터파기 / 사면 붕괴',refs:['현장 문제 해결 사례 DB > 터파기 사면 붕괴 위험','안전관리 프로세스 > 위험 구역 출입 통제','R&R 가이드 > 안전담당'],btns:[{l:'사면 붕괴 대응',f:"showCase('slope')"},{l:'안전 체크리스트',f:"showCL('safety')"},{l:'이슈 접수',f:"sel('issue')"}]},
+  {kws:['인력','협력'],q:'인력 / 협력업체',refs:['현장 문제 해결 사례 DB > 협력사 인력 급감','현장 이슈 접수 > 인력 부족','담당자 / 보고 체계'],btns:[{l:'인력 대응 사례',f:"showCase('labor')"},{l:'이슈 접수',f:"sel('issue')"},{l:'보고 체계',f:"showReport()"}]},
+  {kws:['보고','승인','결재'],q:'보고 / 승인 / 결재',refs:['담당자 / 보고 체계 확인 > 유형별 보고 경로','R&R 가이드 > 직무별 승인 권한','현장 이슈 접수 > 결재 지연'],btns:[{l:'보고 체계',f:"showReport()"},{l:'R&R 가이드',f:"sel('rnr')"},{l:'이슈 접수',f:"sel('issue')"}]}
+];
+function toggleSrch(){const bar=document.getElementById('srch-bar');const icon=document.getElementById('srch-icon');const isOpen=bar.classList.contains('open');if(isOpen){closeSrch();}else{bar.classList.add('open');icon.classList.add('on');setTimeout(()=>document.getElementById('srch-inp').focus(),280);}}
+function closeSrch(){document.getElementById('srch-bar').classList.remove('open');document.getElementById('srch-icon').classList.remove('on');document.getElementById('srch-inp').value='';}
+function srchKey(e){if(e.key==='Enter'){e.preventDefault();doSearch(document.getElementById('srch-inp').value.trim())}}
+function doSearch(q){
+  if(!q)return;closeSrch();aum('🔎 "'+q+'" 검색');
+  const matches=SRCH_DB.filter(r=>r.kws.some(k=>q.includes(k)));
+  if(matches.length===0){rsp(()=>{abm(`<div class="bbl">🔎 <b>매뉴얼 검색 결과</b>  검색어: <b>${esc(q)}</b></div><div class="card" style="min-width:240px"><div class="ctitle">검색 결과 없음</div><div style="font-size:13px;color:#5F7A8F;line-height:1.6">현재 매뉴얼에서 직접 일치하는 항목은 확인되지 않았습니다.<br>현장소장 또는 본사 담당부서 확인이 필요합니다.</div><div class="ai-actions" style="margin-top:10px"><button class="ai-actbtn" onclick="sel('issue')">이슈 접수</button><button class="ai-actbtn" onclick="showReport()">보고 체계 확인</button></div></div>`);},1100);return;}
+  const r=matches[0];
+  rsp(()=>{
+    const refsHtml=r.refs.map((ref,i)=>`<div class="srch-ref-item"><span class="srch-ref-num">${i+1}</span><span style="line-height:1.5">${esc(ref)}</span></div>`).join('');
+    const btnsHtml=r.btns.map(b=>`<button class="ai-actbtn" onclick="${b.f}">${esc(b.l)}</button>`).join('');
+    abm(`<div class="bbl">🔎 <b>매뉴얼 검색 결과</b>  검색어: <b>${esc(q)}</b></div><div class="card" style="min-width:240px"><div class="ctitle">관련 매뉴얼 항목</div>${refsHtml}</div><div class="card" style="min-width:240px;margin-top:5px"><div class="ctitle">바로 확인</div><div class="ai-actions" style="margin-top:0;padding-top:0;border-top:none">${btnsHtml}</div></div>`);
+  },1100);
+}
+// ═══ MENU PANEL ═══
+function toggleMenu(){const pnl=document.getElementById('menu-pnl');const ov=document.getElementById('menu-ov');const icon=document.getElementById('menu-icon');const isOpen=pnl.classList.contains('open');if(isOpen){closeMenu();}else{pnl.classList.add('open');ov.classList.add('open');icon.classList.add('on');}}
+function closeMenu(){document.getElementById('menu-pnl').classList.remove('open');document.getElementById('menu-ov').classList.remove('open');document.getElementById('menu-icon').classList.remove('on');}
+function menuSel(type){closeMenu();setTimeout(()=>sel(type),180);}
+// ═══ TF FUNCTION ═══
+function showTF(){
+  const members=[
+    {role:'TF 리더',name:'현장소장',desc:'총괄 조율, 본사 보고',rc:'#8B1A1A',rb:'#FCEBEB'},
+    {role:'핵심 멤버',name:'숙련 현장담당자 3~5인',desc:'공정·안전·품질 각 분야 10년 이상 경력자',rc:'#185FA5',rb:'#E6F1FB'},
+    {role:'서포터',name:'공무담당 + 본사 PM',desc:'문서화, 일정관리, 검토 지원',rc:'#2E7D5C',rb:'#E1F5EE'},
+    {role:'검수',name:'감리단 / 외부 전문가',desc:'표준 적합성 최종 검토',rc:'#854F0B',rb:'#FAEEDA'}
+  ];
+  const mh=members.map(m=>`<div class="tf-member"><span class="tf-role-badge" style="background:${m.rb};color:${m.rc}">${esc(m.role)}</span><div class="tf-member-info"><div class="tf-member-name">${esc(m.name)}</div><div class="tf-member-desc">${esc(m.desc)}</div></div></div>`).join('');
+  const steps=[
+    {n:'01',t:'킥오프 & 범위 확정',p:'1~2주',items:['TF 멤버 선발 및 역할 배정','표준화 대상 공정·항목 선정','수립 양식 및 인터뷰 가이드 제작']},
+    {n:'02',t:'현장 노하우 수집',p:'3~4주',items:['1:1 인터뷰 진행 + 현장 동행 관찰','아차사고·문제 해결 사례 DB 입력','숙련자 직접 초안 작성 참여']},
+    {n:'03',t:'검토 & 표준화',p:'2~3주',items:['전체 TF 리뷰 세션 주 1회','감리·외부 전문가 적합성 검토','체크리스트, R&R, 프로세스 통일']},
+    {n:'04',t:'배포 & 현장 적용',p:'상시',items:['파일럿 현장 적용 + 피드백 반영','우수 기여자 공식 인정 시행','분기별 업데이트 주기 확정']}
+  ];
+  const sh=steps.map(s=>`<div class="tf-step-card"><div class="tf-step-hdr"><div><div class="tf-step-label">STEP ${esc(s.n)}</div><div class="tf-step-title">${esc(s.t)}</div></div><span class="tf-step-period">${esc(s.p)}</span></div><div class="tf-step-body">${s.items.map(i=>`<div class="tf-step-item">· ${esc(i)}</div>`).join('')}</div></div>`).join('');
+  const outputs=['공정별 표준 운영 프로세스','현장 적용 체크리스트','직무 R&R 가이드','현장 실제 문제 해결 사례 DB','현장 우수 사례 공식 아카이브','신규 인력 온보딩 가이드'];
+  const oh=outputs.map((o,i)=>`<div class="tf-output-row"><div class="tf-output-num">${String(i+1).padStart(2,'0')}</div><span>${esc(o)}</span></div>`).join('');
+  const results=[
+    {icon:'📐',t:'현장 간 운영 편차 축소',d:'표준 절차와 체크리스트 공통 적용'},
+    {icon:'🧠',t:'숙련 노하우 조직 자산화',d:'개인 경험을 공식 운영 기준으로 전환'},
+    {icon:'🏅',t:'현장 참여·인정 경험 강화',d:'기여자 공식 인정 시스템 운영'}
+  ];
+  const rh=results.map(r=>`<div class="tf-result-row"><div class="tf-result-icon">${r.icon}</div><div><div class="tf-result-title">${esc(r.t)}</div><div class="tf-result-desc">${esc(r.d)}</div></div></div>`).join('');
+  abm(`<div class="bbl" style="border-left:3px solid #8B1A1A;padding-left:11px">🏗 <b>현장 TF 구성 및 운영 방식</b>
+
+현장 TF는 현장 숙련자가 직접 운영 기준을 만들고, 이를 매뉴얼북으로 전환하는 실행 조직입니다.
+단순 형식 조직이 아닌, 경험이 실제 현장 기준이 되는 구조입니다.</div>
+<div class="card" style="min-width:240px"><div class="ctitle">👥 TF 구성원</div>${mh}</div>
+<div class="card" style="min-width:240px;margin-top:5px"><div class="ctitle">🔄 운영 프로세스 4단계</div>${sh}</div>
+<div class="card" style="min-width:240px;margin-top:5px"><div class="ctitle">📦 산출물 (총 6개)</div>${oh}</div>
+<div class="card" style="min-width:240px;margin-top:5px"><div class="ctitle">🎯 기대 성과</div>${rh}</div>
+<div class="card" style="min-width:240px;margin-top:5px"><div class="ctitle">관련 메뉴 바로가기</div><div class="ai-actions" style="margin-top:0;padding-top:0;border-top:none"><button class="ai-actbtn" onclick="sel('standard')">공정별 프로세스</button><button class="ai-actbtn" onclick="sel('checklist')">체크리스트</button><button class="ai-actbtn" onclick="sel('rnr')">R&amp;R 가이드</button><button class="ai-actbtn" onclick="sel('best')">우수 사례</button></div></div>`);
+}
+// ═══ CHECKLISTS ═══
+const CLS={daily:{title:'📋 일일 점검 체크리스트',items:[{t:'안전모·안전화·안전대 착용 상태 확인',n:'기준: 100% 착용 / 점검자: 현장소장'},{t:'작업구역 안전 펜스·낙하물 방지망 점검',n:'점검자: 안전관리자'},{t:'소화기 위치 및 작동 상태 확인',n:'기준: 2개 이상'},{t:'레미콘 배합 설계 슬럼프 적합 여부 확인',n:'기준: 150±25mm'},{t:'거푸집 청소 및 이물질 제거 완료',n:''},{t:'진동기 작동 상태 및 예비 확보',n:'⚠ 예비 1대 이상 필수'},{t:'타워크레인 일일 점검표 서명 완료',n:''},{t:'고소작업차 작동유 및 안전장치 점검',n:''},{t:'비산먼지 억제 조치 및 수방막 확인',n:''},{t:'폐수·폐기물 임시 보관 기준 준수 여부',n:'⚠ 폐콘크리트 별도 이동 필요'}]},safety:{title:'🦺 안전 점검 체크리스트',items:[{t:'오전 TBM(안전교육) 실시 확인',n:''},{t:'고소작업 안전대 이중 체결 확인',n:'⚠ Y형 이중 안전대 권장'},{t:'작업구역 위험 요소 순찰 완료',n:''},{t:'안전 울타리 및 추락 방지망 점검',n:''},{t:'소화기 비치 위치 및 수량 확인',n:'기준: 2개 이상'},{t:'전기 설비 접지 상태 확인',n:''},{t:'응급처치 키트 비치 여부 확인',n:''},{t:'위험작업 허가서 발급 여부 확인',n:'고소·화기·밀폐 작업'},{t:'안전 특이사항 일지 기록 완료',n:''}]},handover:{title:'🔄 인수인계 체크리스트',items:[{t:'진행 중인 공정 현황 서면 전달',n:''},{t:'미결 사항 및 이슈 목록 공유',n:''},{t:'주요 연락처 명단 인계',n:''},{t:'자재·장비 현황 파악 및 전달',n:''},{t:'결재 대기 문서 확인 및 인계',n:''},{t:'안전 특이사항 및 위험구역 전달',n:''},{t:'현장 도면·공정표 최신본 확인',n:''},{t:'1주차 목표 합의 및 서면 확인',n:''}]},week1:{title:'✅ 1주 후 자가 점검',items:[{t:'일일 체크리스트를 독립적으로 수행할 수 있는가?',n:''},{t:'긴급 상황 시 보고 절차를 알고 있는가?',n:''},{t:'담당 협력사 반장과 소통이 원활한가?',n:''},{t:'공정표를 읽고 오늘 일정을 설명할 수 있는가?',n:''},{t:'현장 위험 구역 3곳 이상 설명할 수 있는가?',n:''}]}};
+function showCL(type,silent){const l=CLS[type];if(!silent)aum(l.title.replace(/📋|🦺|🔄|✅/g,'').trim()+' 보여줘');rsp(()=>{const uid='cl_'+type+'_'+Date.now();const ihtml=l.items.map((it,i)=>{const nh=it.n?`<div class="cl-note">${esc(it.n)}</div>`:'';return`<label class="cli" id="${uid}_${i}"><input type="checkbox" onchange="tCL('${uid}_${i}')"><div><span>${esc(it.t)}</span>${nh}</div></label>`;}).join('');abm(`<div class="card" style="min-width:240px"><div class="ctitle">${l.title}</div>${ihtml}<div style="margin-top:8px;font-size:11.5px;color:#7A1A1A;font-weight:600">⚠ 불합격 항목은 당일 조치 완료 후 현장소장 재확인이 필요합니다.</div><div class="cl-act"><button class="cl-actbtn danger" onclick="sel('issue')">🚨 이슈 접수하기</button><button class="cl-actbtn" onclick="showReport()">📊 보고 체계 보기</button></div></div>`);},800);}
+function tCL(id){const el=document.getElementById(id);if(el){const cb=el.querySelector('input');el.classList.toggle('chk',cb.checked)}}
+// ═══ PROCESSES ═══
+function showConcrete(){const steps=[['사전 준비·검측','거푸집 청소 / 철근 배근 확인 / 레미콘 발주 수량 확정'],['타설 실행','1회 높이 500mm 이하 / 진동기 간격 500mm / 2시간 이내 연속 타설'],['다짐·마감','표면 레벨 ±5mm / 초벌 미장 / 균열 예방 양생 시작'],['양생 관리','타설 후 24h 내 살수 시작 / 최소 7일 / 동절기 보온 양생 의무'],['검측·기록','압축강도 공시체 채취 / 타설일보 작성 / 균열 감시']];const sh=steps.map(([t,d],i)=>`<div class="step-row"><div class="step-num">${i+1}</div><div><b>${t}</b><br><span style="font-size:12px;color:#4A6E87">${d}</span></div></div>`).join('');abm(`<div class="bbl">🏗 <b>콘크리트 타설 공정 표준 프로세스</b></div><div class="card" style="min-width:240px"><div class="ctitle">STEP별 작업 순서</div>${sh}</div><div class="card" style="min-width:240px;margin-top:5px"><div class="ctitle">핵심 작업 기준</div><div class="rnr-row"><div class="rnr-lbl">슬럼프</div><div class="rnr-val">150±25mm</div></div><div class="rnr-row"><div class="rnr-lbl">공기량</div><div class="rnr-val">4.5±1.5%</div></div><div class="rnr-row"><div class="rnr-lbl">W/C비</div><div class="rnr-val">55% 이하</div></div><div class="rnr-row"><div class="rnr-lbl">피복 두께</div><div class="rnr-val">기초 60mm / 기둥·보 40mm</div></div><div class="rnr-row"><div class="rnr-lbl">타설 높이</div><div class="rnr-val">1회 500mm 이하</div></div></div><div class="bbl" style="margin-top:5px">💡 야간 타설 시 조명 타설면 기준 재배치 / 고온기 35℃↑ 오전 7시 이전 완료 목표</div>`);}
+function showSafetyProc(){const steps=[['오전 TBM 실시','당일 위험 포인트 육성 공유 / 전원 참여'],['위험 요소 순찰','고소·화기·전기·밀폐 구역 순서대로 점검'],['보호장구 착용 확인','안전모·안전화·안전대 100% 착용'],['특이사항 일지 기록','이상 발견 즉시 현장소장 보고'],['저녁 안전 점검','작업 마감 후 위험 구역 재확인 및 시건']];const sh=steps.map(([t,d],i)=>`<div class="step-row"><div class="step-num">${i+1}</div><div><b>${t}</b><br><span style="font-size:12px;color:#4A6E87">${d}</span></div></div>`).join('');abm(`<div class="bbl">🦺 <b>안전관리 표준 프로세스</b></div><div class="card" style="min-width:240px"><div class="ctitle">일일 안전 루틴</div>${sh}</div><div class="safe-bbl" style="margin-top:5px">위험 요소가 확인되면 즉시 작업을 중지하고 안전담당 및 현장소장에게 보고해 주세요.<br>즉시 사고로 이어질 수 있는 상황은 작업중지가 우선입니다.</div>`);}
+function showFinish(){const s=[['바탕면 처리','균열·오염 제거, 평탄도 확인'],['방수·단열 시공','방수 누수 테스트 선행'],['미장 작업','두께·평탄도 기준 준수'],['도배·도장','도장 두께 / 수직·수평 기준'],['최종 검수','발주처·감리 동행 검수']];const sh=s.map(([t,d],i)=>`<div class="step-row"><div class="step-num">${i+1}</div><div><b>${t}</b><br><span style="font-size:12px;color:#4A6E87">${d}</span></div></div>`).join('');abm(`<div class="bbl">🔨 <b>마감공사 표준 프로세스</b></div><div class="card" style="min-width:240px"><div class="ctitle">작업 순서</div>${sh}</div>`);}
+function showEquip(){const s=[['배관 도면 검토','간섭 여부 확인'],['배관 설치','지지철물 간격·수직수평 기준'],['압력 테스트','기밀·수압 테스트 필수'],['보온·단열재 시공','결로 방지 기준'],['시운전','성능 테스트 후 감리 확인']];const sh=s.map(([t,d],i)=>`<div class="step-row"><div class="step-num">${i+1}</div><div><b>${t}</b><br><span style="font-size:12px;color:#4A6E87">${d}</span></div></div>`).join('');abm(`<div class="bbl">⚙️ <b>설비공사 표준 프로세스</b></div><div class="card" style="min-width:240px"><div class="ctitle">작업 순서</div>${sh}</div>`);}
+// ═══ RnR ═══
+const RNR={'현장소장':{role:['현장 전반 운영 총괄','공정·안전·품질 관리 지휘','계약 변경 협의'],auth:['공정계획 승인','장비 투입 결정','500만 원 이하 긴급 지출'],collab:['본사 PM','발주처 담당자','감리단장'],report:'본사 PM → 본사 임원'},'공무담당':{role:['공정표 작성 및 관리','기성 청구 서류 준비','계약 서류 관리'],auth:['하도급 계약서 검토','기성 청구서 1차 승인'],collab:['현장소장','협력사 공무','발주처 공무'],report:'현장소장'},'품질담당':{role:['품질 시험 및 검측 수행','자재 입고 검사','품질 기록 유지'],auth:['자재 합·불합격 판정','품질 시험 성과 확인'],collab:['공정담당','감리원','시험기관'],report:'현장소장'},'안전담당':{role:['안전 교육 및 점검 시행','위험 요인 발굴 및 개선','산재 예방 활동'],auth:['위험작업 작업중지명령','안전 보호구 구매 승인'],collab:['전 직종','협력사 안전','노동부 감독관'],report:'현장소장 → 본사 안전팀'},'공정담당':{role:['세부 공정 일정 관리','작업 지시 및 조율','일일 실적 기록'],auth:['작업 순서 조정','당일 인력 배치 결정'],collab:['안전담당','품질담당','협력사 반장'],report:'현장소장'}};
+function showRnr(job,silent){const d=RNR[job];if(!d)return;if(!silent)aum(job+' 역할·권한 알려줘');rsp(()=>{abm(`<div class="bbl">👤 <b>${esc(job)}</b> R&amp;R 가이드</div><div class="card" style="min-width:240px"><div class="rnr-row"><div class="rnr-lbl">주요 역할</div><div class="rnr-val">${d.role.join('<br>')}</div></div><div class="rnr-row"><div class="rnr-lbl">승인 권한</div><div class="rnr-val">${d.auth.join('<br>')}</div></div><div class="rnr-row"><div class="rnr-lbl">협업 대상</div><div class="rnr-val">${d.collab.join(', ')}</div></div><div class="rnr-row"><div class="rnr-lbl">보고 체계</div><div class="rnr-val">${esc(job)} → ${esc(d.report)}</div></div></div>`);},800);}
+// ═══ CASES ═══
+const CASES={coldjoint:{label:'레미콘 지연 / 콜드조인트 위험',steps:['타설면 비닐 보양 및 습윤 유지','레미콘 공장 2곳 동시 발주 가능 여부 확인','재타설 전 품질담당과 표면 상태 확인','현장소장에게 즉시 보고'],warn:'타설 중단 2시간 초과 시 타설 계획 재수립 필수. 안전 관련 이상 항목은 당일 조치 후 현장소장 재확인.',prevent:'레미콘 공장 2개소 이상 사전 지정, 예비 발주 계약 체결',isSafe:true},slope:{label:'터파기 사면 붕괴 위험',steps:['해당 구역 즉시 작업 중지 및 출입 통제','배수로 추가 굴착 및 토사 유출 방지 마대 설치','지반공학 전문가 긴급 현장 점검 요청','현장소장·안전담당 즉시 보고'],warn:'즉시 사고로 이어질 수 있는 상황은 작업중지가 우선입니다. 위험 요소가 확인되면 안전담당 및 현장소장에게 즉시 보고해 주세요.',prevent:'강우량 30mm/일 초과 시 터파기 구역 일일 점검 기준 수립',isSafe:true},labor:{label:'협력사 인력 급감 / 공정 지연',steps:['세전 협력사 2개소 컨택 및 비교 견적 수령','공정 재조정: 병행 가능 작업 선배치','기존 협력사와 주재회의 후 미지급금 선급 합의 검토','현장소장 보고 및 공정 복구 계획 수립'],warn:'공정률 10% 이상 지연 시 현장소장 즉시 보고.',prevent:'핵심 공종 협력사 2개소 이상 사전 관계 유지 / 미지급금 30일 이내 정산',isSafe:false},material:{label:'자재 부족 대응',steps:['잔여 자재 수량 정확히 파악','발주 담당자 긴급 연락 및 긴급 발주 요청','대체 자재 가능 여부 품질담당 확인','공정 조정 검토 및 현장소장 보고'],warn:'긴급 발주 필요 시 본사 확인이 필요합니다.',prevent:'핵심 자재 최소 재고 기준 설정 및 발주 리드타임 사전 관리',isSafe:false}};
+function showCase(type,silent){const c=CASES[type];if(!silent)aum(c.label+' 대응 방법 알려줘');rsp(()=>{const sh=c.steps.map((s,i)=>`<div class="step-row"><div class="step-num">${i+1}</div><div>${esc(s)}</div></div>`).join('');const wh=c.isSafe?`<div class="safe-bbl" style="margin-top:5px">⚠ ${esc(c.warn)}</div>`:`<div class="bbl" style="margin-top:5px">⚠ ${esc(c.warn)}</div>`;abm(`<div class="bbl">${esc(c.label)} 대응 절차입니다.</div><div class="card" style="min-width:240px"><div class="ctitle">📋 대응 절차</div>${sh}</div>${wh}<div class="bbl" style="margin-top:5px">예방 기준: ${esc(c.prevent)}</div>`);},900);}
+// ═══ BEST PRACTICES ═══
+const BP=[{tag:'이달의 사례 · 공정 효율화',color:'#4A7FA0',title:'타설 대기 시간 40% 단축 — 레미콘 배차 최적화 루틴',result:'대기 시간 8분 → 4.8분 / 타설 완료 1.5시간 앞당김',bg:'배차 간격을 GPS·타설량 기반으로 계산하던 기존 방식에서 대기 시간 반복 발생',steps:['배차 간격을 타설량 계산 + GPS 기반 실시간 조정','공장 담당자와 카카오톡 그룹 채널 운영','1차 타설분 75% 완료 시점에 2차 배차 요청 신호 표준화'],where:'대규모 슬래브 및 기초 타설 현장'},{tag:'안전 우수 · 사고 예방',color:'#2E6B4A',title:'고소 작업 추락 사고 Zero — Y형 이중 안전대 루틴',result:'6개월 연속 추락 사고 Zero / 아차사고 4건 조기 발굴',bg:'철골 조립 단계 고소 작업 빈번, 단일 안전대 미체결 구간 발생',steps:['Y형 이중 안전대 전량 교체','체결 여부 상호 확인 파트너제 도입','3분 안전 브리핑에서 당일 위험 포인트 공유','미체결 적발 시 당일 작업 중지 후 교육'],where:'철골·커튼월·외부 마감 작업 현장'},{tag:'노하우 · 인수인계 개선',color:'#7A4FA0',title:'신규 반장 적응 기간 3주 단축 — 현장 맞춤 온보딩 키트',result:'평균 적응 기간 5주 → 2주 / 착오 지시 80% 감소',bg:'신규 반장 투입 후 현장 파악 기간 평균 5주 소요',steps:['현장 도면·장비 위치·협력사 연락처 1장 요약 지도 제공','첫 3일간 선임 반장과 밀착 동행','매일 15분 디브리핑','1주 후 체크리스트 자가 점검'],where:'협력사 교체 또는 신규 투입이 빈번한 모든 현장'}];
+function showBest(){const ch=BP.map((b,i)=>`<div class="bpcard" style="border-left-color:${b.color}"><div class="bp-tag" style="color:${b.color}">${esc(b.tag)}</div><div class="bp-title">${esc(b.title)}</div><div class="bp-result">✅ ${esc(b.result)}</div><button class="bp-detbtn" onclick="showBpDetail(${i})" style="color:${b.color}">📄 자세히 보기</button></div>`).join('');abm(`<div class="bbl">🏆 <b>현장 우수 사례 아카이브</b></div><div class="card" style="min-width:240px;background:#F8FAFC">${ch}</div>`);}
+function showBpDetail(i){const b=BP[i];aum(b.title.substring(0,20)+'... 자세히 보기');rsp(()=>{const sh=b.steps.map((s,j)=>`<div class="bpd-step"><div class="bpd-num">${j+1}</div><div>${esc(s)}</div></div>`).join('');abm(`<div class="bbl" style="border-left:3px solid ${b.color};padding-left:11px"><b style="color:${b.color}">${esc(b.tag)}</b><br>${esc(b.title)}</div><div class="card" style="min-width:240px"><div class="ctitle">📌 배경</div><div style="font-size:12.5px;color:#2C2C2A;line-height:1.6">${esc(b.bg)}</div></div><div class="card" style="min-width:240px;margin-top:5px"><div class="ctitle">🛠 적용 방법</div>${sh}</div><div class="card" style="min-width:240px;margin-top:5px"><div class="rnr-row"><div class="rnr-lbl">성과</div><div class="rnr-val" style="color:#2E6B4A;font-weight:600">${esc(b.result)}</div></div><div class="rnr-row"><div class="rnr-lbl">적용 현장</div><div class="rnr-val">${esc(b.where)}</div></div></div>`);},900);}
+// ═══ ONBOARDING ═══
+function showOnboard(){const days=[{d:'DAY 1',t:'현장 파악',items:['현장 전체 도면과 공사 현황 설명 30분','주요 위험 구역 순찰 동행','현장 조직 및 협력사 기본 정보 확인','주요 연락처 명단 수령']},{d:'DAY 2',t:'업무 체험',items:['전임자·선임자 밀착 동행','일일 보고서 작성 실습','체크리스트 직접 수행','협력사 반장 및 담당자 인사']},{d:'DAY 3',t:'독립 점검',items:['단독 일일 점검 수행 후 결과 보고','자가 체크리스트 작성','미흡 사항 멘토링 세션 30분','1주차 목표 합의 및 확인']}];const dh=days.map(d=>`<div style="margin-bottom:10px"><div style="font-size:12px;font-weight:700;color:#4A7FA0;margin-bottom:5px">${d.d} · ${d.t}</div>${d.items.map(i=>`<div style="font-size:12.5px;color:#2C2C2A;padding:2px 0 2px 10px;border-left:2px solid #D4E4EF;margin-bottom:2px">· ${esc(i)}</div>`).join('')}</div>`).join('');abm(`<div class="bbl">🆕 <b>신규 인력 현장 적응 가이드</b></div><div class="card" style="min-width:240px"><div class="ctitle">첫 3일 적응 로드맵</div>${dh}</div><div class="card" style="min-width:240px;margin-top:5px"><div class="ctitle">⚠ 자주 하는 실수</div><div style="font-size:12.5px;color:#A32D2D;padding:3px 0">· 체크리스트를 사후에 작성하는 것</div><div style="font-size:12.5px;color:#A32D2D;padding:3px 0">· 협력사에 반장 통하지 않고 직접 지시하는 것</div><div style="font-size:12.5px;color:#A32D2D;padding:3px 0">· 서류 누락 후 결재 전수 서류로 투입하는 것</div></div><div class="bbl" style="margin-top:5px">첫 주에는 <b>보고 체계, 위험 구역, 협력사 담당자, 일일 점검 흐름</b>을 우선 파악해야 합니다.</div>`);}
+// ═══ REPORT CHAIN ═══
+function showReport(){const chains=[{t:'안전 위험 요소',p:['안전담당','현장소장','본사 안전팀'],u:true},{t:'품질 문제',p:['품질담당','현장소장'],u:false},{t:'공정 지연',p:['공정담당','현장소장'],u:false},{t:'계약·기성·서류',p:['공무담당','현장소장'],u:false},{t:'협력업체 조율',p:['공정/공무담당','현장소장'],u:false},{t:'긴급 사고 위험',p:['즉시 작업 중지','현장소장+안전담당','본사 긴급'],u:true}];const rh=chains.map(c=>{const ph=c.p.map((p,i)=>`<span class="rpnode" style="${c.u?'background:#FCEBEB;color:#A32D2D;border-color:rgba(163,45,45,.2)':''}">${esc(p)}</span>${i<c.p.length-1?'<span class="rparrow"><i class="ti ti-arrow-right" style="font-size:13px"></i></span>':''}`).join('');return`<div style="margin-bottom:10px"><div style="font-size:12px;font-weight:700;color:${c.u?'#A32D2D':'#2C3E50'};margin-bottom:4px">${esc(c.t)}</div><div class="rpath">${ph}</div></div>`;}).join('');abm(`<div class="bbl">🗂 <b>담당자 / 보고 체계</b></div><div class="card" style="min-width:240px"><div class="ctitle">보고 경로 안내</div>${rh}</div><div class="safe-bbl" style="margin-top:5px">이상 발생 시 <b>즉시 문자 보고 → 현장소장</b>이 기본 원칙입니다. 안전 관련 사안은 지체 없이 보고해 주세요.</div>`);}
+// ═══ ISSUE FLOW ═══
+function issueCard(){return`<div class="bbl">🚨 <b>현장 이슈 접수</b><br>이슈 유형을 선택해주세요.</div><div class="card" style="min-width:240px"><div class="ctitle">이슈 유형 선택 (1/2)</div><button class="ifbtn" onclick="pickIssue('장비·PC·시스템 문제')"><i class="ti ti-device-laptop"></i>장비·PC·시스템 문제<span class="badge red" style="margin-left:auto">긴급</span></button><button class="ifbtn" onclick="pickIssue('안전 위험 요소')"><i class="ti ti-alert-octagon" style="color:#A32D2D"></i>안전 위험 요소<span class="badge red" style="margin-left:auto">긴급</span></button><button class="ifbtn" onclick="pickIssue('결재 지연·의사결정 지연')"><i class="ti ti-file-time"></i>결재 지연·의사결정 지연<span class="badge amber" style="margin-left:auto">보통</span></button><button class="ifbtn" onclick="pickIssue('인력 부족')"><i class="ti ti-users-minus"></i>인력 부족<span class="badge amber" style="margin-left:auto">보통</span></button><button class="ifbtn" onclick="pickIssue('협력업체 조율 문제')"><i class="ti ti-handshake"></i>협력업체 조율 문제<span class="badge amber" style="margin-left:auto">보통</span></button><button class="ifbtn" onclick="pickIssue('숙소·식대·근무환경 문제')"><i class="ti ti-home"></i>숙소·식대·근무환경<span class="badge green" style="margin-left:auto">낮음</span></button><button class="ifbtn" onclick="pickIssue('본사 답변 지연')"><i class="ti ti-message-off"></i>본사 답변 지연<span class="badge amber" style="margin-left:auto">보통</span></button><button class="ifbtn" onclick="pickIssue('업무 매뉴얼 부족')"><i class="ti ti-book-off"></i>업무 매뉴얼 부족<span class="badge green" style="margin-left:auto">낮음</span></button><button class="ifbtn" onclick="pickIssue('인수인계 문제')"><i class="ti ti-transfer"></i>인수인계 문제<span class="badge amber" style="margin-left:auto">보통</span></button></div>`;}
+let curIssue='';
+function pickIssue(type){curIssue=type;aum(type+' 이슈 접수');rsp(()=>{abm(`<div class="bbl">이슈 유형: <b>${esc(type)}</b><br>긴급도를 선택해주세요.</div><div class="card" style="min-width:210px"><div class="ctitle">긴급도 선택 (2/2)</div><button class="ifbtn" onclick="submitIssue('오늘 중 조치 필요')"><i class="ti ti-urgent" style="color:#A32D2D"></i>🔴 오늘 중 조치 필요</button><button class="ifbtn" onclick="submitIssue('이번 주 내 조치 필요')"><i class="ti ti-clock" style="color:#854F0B"></i>🟡 이번 주 내 조치 필요</button><button class="ifbtn" onclick="submitIssue('이번 달 내 개선 필요')"><i class="ti ti-calendar" style="color:#3B6D11"></i>🟢 이번 달 내 개선 필요</button><button class="ifbtn" onclick="submitIssue('장기 개선 과제')"><i class="ti ti-chart-arrows-vertical" style="color:#4A7FA0"></i>🔵 장기 개선 과제</button></div>`);},700);}
+function submitIssue(urg){aum(urg);const now=new Date();const ts=`${now.getFullYear()}.${String(now.getMonth()+1).padStart(2,'0')}.${String(now.getDate()).padStart(2,'0')} ${gt()}`;rsp(()=>{abm(`<div class="bbl">📋 <b>이슈 접수 완료</b>\n\n• 접수번호: ISSUE-2025-001\n• 이슈 유형: ${esc(curIssue)}\n• 긴급도: ${esc(urg)}\n• 본사 확인 필요: ${(curIssue.includes('안전')||curIssue.includes('결재')||curIssue.includes('본사'))?'Y':'N'}\n• 접수 시각: ${ts}</div><div class="card" style="min-width:240px;margin-top:5px"><div class="ctitle">📍 처리 진행 단계</div><div class="tl"><div class="tl-step done"><div class="tl-dot">✓</div><div class="tl-lbl">접수<br>완료</div></div><div class="tl-step active"><div class="tl-dot">🔎</div><div class="tl-lbl">검토<br>중</div></div><div class="tl-step pending"><div class="tl-dot">○</div><div class="tl-lbl">처리<br>예정</div></div><div class="tl-step pending"><div class="tl-dot">○</div><div class="tl-lbl">처리<br>완료</div></div></div></div>`);},1000);}
+// ═══ STATUS ═══
+function showStatus(){abm(`<div class="bbl">📍 <b>접수 이슈 처리 상태</b></div><div class="card" style="min-width:240px"><div class="ctitle">처리 현황 조회</div><div class="rnr-row"><div class="rnr-lbl">접수번호</div><div class="rnr-val" style="font-weight:700;color:#185FA5">ISSUE-2025-001</div></div><div class="rnr-row"><div class="rnr-lbl">이슈 유형</div><div class="rnr-val">안전 위험 요소</div></div><div class="rnr-row"><div class="rnr-lbl">현재 상태</div><div class="rnr-val"><span class="badge amber">🔎 검토 중</span></div></div></div><div class="card" style="min-width:240px;margin-top:5px"><div class="ctitle">처리 단계 진행 현황</div><div class="tl"><div class="tl-step done"><div class="tl-dot">✓</div><div class="tl-lbl">접수<br>완료</div></div><div class="tl-step active"><div class="tl-dot">🔎</div><div class="tl-lbl">검토<br>중</div></div><div class="tl-step pending"><div class="tl-dot">○</div><div class="tl-lbl">처리<br>예정</div></div><div class="tl-step pending"><div class="tl-dot">○</div><div class="tl-lbl">처리<br>완료</div></div></div></div>`);}
+// ═══ AI FREE-QUESTION ═══
+const CAT_RULES=[
+  {cat:'TF·매뉴얼 제작',icon:'ti-users-group',color:'#8B1A1A',bg:'#FCEBEB',safe:false,kws:['TF','매뉴얼북','매뉴얼 제작','숙련자','노하우','표준화','운영 기준','기여자','현장 참여','공식 인정','TF 구성']},
+  {cat:'안전',icon:'ti-shield-check',color:'#A32D2D',bg:'#FCEBEB',safe:true,kws:['안전','사고','위험','붕괴','추락','감전','화재','콜드조인트','부상','응급','작업중지']},
+  {cat:'공정',icon:'ti-ruler-2',color:'#185FA5',bg:'#E6F1FB',safe:false,kws:['공정','타설','양생','철근','거푸집','골조','마감','설비','시공','준공','지연','슬래브']},
+  {cat:'품질',icon:'ti-microscope',color:'#3B6D11',bg:'#EAF3DE',safe:false,kws:['품질','검측','시험','검사','슬럼프','강도','균열','불합격','배합']},
+  {cat:'장비·자재',icon:'ti-settings',color:'#854F0B',bg:'#FAEEDA',safe:false,kws:['장비','자재','레미콘','크레인','발주','구매','진동기','수급']},
+  {cat:'인력·협력업체',icon:'ti-users',color:'#533B89',bg:'#EEEDFE',safe:false,kws:['인력','협력','업체','반장','작업자','이탈','부족','채용','외주']},
+  {cat:'보고·승인',icon:'ti-file-check',color:'#0F6E56',bg:'#E1F5EE',safe:false,kws:['보고','승인','결재','권한','담당자','보고서','서류','계약']},
+  {cat:'온보딩·인수인계',icon:'ti-user-plus',color:'#1A5FA0',bg:'#E6F1FB',safe:false,kws:['신규','온보딩','인수인계','첫날','처음','적응','교육']}
+];
+const CAT_RESP={
+  'TF·매뉴얼 제작':{check:['어떤 공정 또는 업무 기준을 표준화하려는지 확인','현장 숙련자 또는 담당자가 참여하고 있는지 확인','산출물이 체크리스트·R&R·사례 DB 중 무엇인지 파악'],action:['현장 TF를 구성한다 (TF 리더: 현장소장)','숙련자 1:1 인터뷰와 현장 동행 관찰로 노하우를 수집한다','감리단/외부 전문가 검토 후 표준화한다','파일럿 현장 적용 후 피드백을 반영한다'],report:'일반적으로 본사 PM + 감리단 검토 후 승인 (TF 리더: 현장소장 → 본사 PM)',manual:'현장 TF 구성 및 운영 방식 > 4단계 프로세스 참조',btns:[{l:'TF 구성 및 운영 방식',f:"sel('tf')"},{l:'우수 사례 아카이브',f:"sel('best')"},{l:'R&R 가이드',f:"sel('rnr')"}]},
+  '안전':{check:['즉각적인 인명 피해 여부 및 위험 범위 확인','위험 구역 내 작업자 대피 여부 확인','위험 확산 가능성 검토'],action:['즉시 작업을 중지하고 위험 구역 출입 통제','안전담당에게 즉시 구두·문자 보고','현장소장 보고 및 119/112 연락 여부 판단'],report:'즉시: 안전담당 → 현장소장 → 본사 안전팀 (본사 확인 필요: Y)',manual:'안전 점검 체크리스트 및 Trouble Shooting DB 참조',btns:[{l:'안전 체크리스트',f:"showCL('safety')"},{l:'보고 체계 확인',f:"showReport()"},{l:'이슈 접수',f:"sel('issue')"}]},
+  '공정':{check:['현재 공정률 및 공정표 대비 진도 확인','지연 원인 파악','관련 인력·장비·자재 현황'],action:['공정담당과 즉시 협의 후 공정 조정','병행 가능한 작업 선배치 검토','현장소장 보고'],report:'공정률 10% 이상 지연 시 현장소장 즉시 보고',manual:'공정별 표준 운영 프로세스 > 해당 공정 참조',btns:[{l:'표준 프로세스',f:"sel('standard')"},{l:'문제 해결 사례',f:"sel('cases')"},{l:'이슈 접수',f:"sel('issue')"}]},
+  '품질':{check:['해당 품질 기준값 및 시방서 확인','측정값과 기준값 차이 파악','자재 이상 여부'],action:['품질담당 즉시 보고 및 검측 실시','기준 초과 시 해당 구간 작업 중단','감리원 확인 요청'],report:'품질담당 → 현장소장',manual:'콘크리트 타설 기준: 슬럼프 150±25mm / W/C비 55% 이하',btns:[{l:'일일 점검 체크리스트',f:"showCL('daily')"},{l:'보고 체계 확인',f:"showReport()"},{l:'이슈 접수',f:"sel('issue')"}]},
+  '장비·자재':{check:['이상 증상 및 발생 시점 확인','예비 장비·대체 자재 가용 여부','일정 영향'],action:['장비 담당자 즉시 연락','예비 장비 투입 또는 긴급 발주 검토','현장소장 보고'],report:'긴급 발주 시 본사 확인 필요',manual:'일일 점검 체크리스트 > 장비 점검 항목 참조',btns:[{l:'일일 점검 체크리스트',f:"showCL('daily')"},{l:'문제 해결 사례',f:"sel('cases')"},{l:'이슈 접수',f:"sel('issue')"}]},
+  '인력·협력업체':{check:['투입 인원 현황 및 부족 규모','이탈 원인 확인','공정 지연 여부'],action:['협력사 반장과 즉시 협의','세전 업체 2개소 컨택 및 긴급 투입 검토','공정 재조정'],report:'공정률 10% 이상 지연 시 현장소장 즉시 보고',manual:'현장 문제 해결 사례 DB > 협력사 인력 급감 사례 참조',btns:[{l:'문제 해결 사례',f:"sel('cases')"},{l:'보고 체계 확인',f:"showReport()"},{l:'이슈 접수',f:"sel('issue')"}]},
+  '보고·승인':{check:['승인 권한 보유자 확인','결재 대기 기간·지연 원인','대체 승인 경로'],action:['R&R 가이드에서 승인 권한 확인','현장소장에게 결재 지연 사실 보고','본사 담당자에게 유선 확인'],report:'승인 필요 사안에 따라 현장소장 → 본사 담당부서',manual:'R&R 가이드 > 직무별 승인 권한 항목',btns:[{l:'R&R 가이드',f:"sel('rnr')"},{l:'보고 체계 확인',f:"showReport()"},{l:'이슈 접수',f:"sel('issue')"}]},
+  '온보딩·인수인계':{check:['신규 인력의 현장 파악 수준','인수인계 체크리스트 완료 여부','멘토 지정 여부'],action:['3일 로드맵 적용','인수인계 체크리스트 공동 작성','선임 반장 밀착 동행 배정'],report:'업무 미숙·착오 시 현장소장 보고',manual:'신규 인력 현장 적응 가이드 및 인수인계 체크리스트',btns:[{l:'신규 인력 가이드',f:"sel('onboarding')"},{l:'인수인계 체크리스트',f:"showCL('handover')"},{l:'이슈 접수',f:"sel('issue')"}]},
+  '기타':{check:['관련 담당 직무 및 업무 범위 확인','유사 기준 또는 사례 검색','현장 특수 상황 여부'],action:['관련 메뉴에서 유사 항목 먼저 확인','해당 담당자에게 문의','현장소장 또는 본사 담당부서 확인'],report:'사안에 따라 현장소장 또는 본사 담당부서',manual:'주요 기능 메뉴 전체 참조',btns:[{l:'주요 메뉴',f:"sel('standard')"},{l:'이슈 접수',f:"sel('issue')"},{l:'보고 체계',f:"showReport()"}]}
+};
+function extractKws(text){const all=['안전','공정','품질','자재','장비','인력','협력','레미콘','타설','양생','체크리스트','인수인계','보고','결재','승인','신규','콜드조인트','균열','지연','부족','TF','매뉴얼','숙련자','표준화'];return all.filter(k=>text.includes(k)).slice(0,4);}
+function classifyQ(text){for(const r of CAT_RULES){if(r.kws.some(k=>text.includes(k)))return r}return{cat:'기타',icon:'ti-help',color:'#5F7A8F',bg:'#EEF3F7',safe:false};}
+function aiResponse(text){
+  const rule=classifyQ(text);const rp=CAT_RESP[rule.cat]||CAT_RESP['기타'];
+  const kws=extractKws(text);
+  const kwChips=kws.length?`<div style="margin-bottom:8px"><span style="font-size:11px;color:#5F7A8F">추출된 핵심 키워드: </span>${kws.map(k=>`<span class="kw-chip">${k}</span>`).join('')}</div>`:'';
+  const checkHtml=rp.check.map(c=>`<div class="ai-item">· ${esc(c)}</div>`).join('');
+  const actHtml=rp.action.map(a=>`<div class="ai-item">· ${esc(a)}</div>`).join('');
+  const btnHtml=rp.btns.map(b=>`<button class="ai-actbtn" onclick="${b.f}">${esc(b.l)}</button>`).join('');
+  const safeWarn=rule.safe?`<div class="ai-warn">⚠ 즉시 사고로 이어질 수 있는 상황은 작업중지가 우선입니다.<br>위험 요소가 확인되면 안전담당 및 현장소장에게 즉시 보고해 주세요.</div>`:'';
+  return`<div class="card" style="min-width:240px">${kwChips}<div style="margin-bottom:10px"><span class="ai-cat" style="background:${rule.bg};color:${rule.color}"><i class="ti ${rule.icon}" style="font-size:13px"></i>${esc(rule.cat)} 관련</span><span style="font-size:12px;color:#5F7A8F"> 질문으로 분류되었습니다.</span></div><div class="ai-section"><div class="ai-sec-title"><i class="ti ti-search" style="font-size:14px;color:#4A7FA0"></i>1. 우선 확인할 사항</div>${checkHtml}</div><div class="ai-section"><div class="ai-sec-title"><i class="ti ti-tool" style="font-size:14px;color:#4A7FA0"></i>2. 현장 조치 방향</div>${actHtml}</div><div class="ai-section"><div class="ai-sec-title"><i class="ti ti-file-report" style="font-size:14px;color:#4A7FA0"></i>3. 보고 필요 여부</div><div class="ai-item">${esc(rp.report)}</div></div><div class="ai-section" style="margin-bottom:0"><div class="ai-sec-title"><i class="ti ti-book" style="font-size:14px;color:#4A7FA0"></i>4. 매뉴얼 기준 확인</div><div class="ai-item">${esc(rp.manual)}</div></div>${safeWarn}<div class="ai-actions">${btnHtml}</div></div>`;
+}
+// ═══ SELECTOR ═══
+const LABELS={tf:'현장 TF 구성 및 운영 방식',standard:'공정별 표준 운영 프로세스',checklist:'현장 적용 체크리스트',rnr:'R&R 가이드',cases:'현장 문제 해결 사례 DB',best:'현장 우수 사례 아카이브',onboarding:'신규 인력 현장 적응 가이드',issue:'현장 이슈 접수',status:'처리 상태 조회',report:'담당자 / 보고 체계 확인'};
+function sel(type,silent){
+  if(!silent)aum(LABELS[type]);
+  rsp(()=>{
+    if(type==='tf')showTF();
+    else if(type==='standard')abm(`<div class="bbl">📘 <b>공정별 표준 운영 프로세스</b></div><div class="card" style="min-width:220px"><div class="ctitle">공정 선택</div><button class="mbtn" onclick="aum('콘크리트 타설 공정');rsp(showConcrete,900)"><i class="ti ti-droplet"></i>콘크리트 타설 공정</button><button class="mbtn" onclick="aum('안전관리 프로세스');rsp(showSafetyProc,900)"><i class="ti ti-shield-check"></i>안전관리 프로세스</button><button class="mbtn" onclick="aum('마감공사 프로세스');rsp(showFinish,900)"><i class="ti ti-brush"></i>마감공사 프로세스</button><button class="mbtn" onclick="aum('설비공사 프로세스');rsp(showEquip,900)"><i class="ti ti-settings"></i>설비공사 프로세스</button></div>`);
+    else if(type==='checklist')abm(`<div class="bbl">☑ <b>현장 적용 체크리스트</b></div><div class="card" style="min-width:220px"><div class="ctitle">체크리스트 선택</div><button class="mbtn" onclick="showCL('daily')"><i class="ti ti-clipboard-list"></i>일일 점검 체크리스트</button><button class="mbtn" onclick="showCL('safety')"><i class="ti ti-shield-check"></i>안전 점검 체크리스트</button><button class="mbtn" onclick="showCL('handover')"><i class="ti ti-transfer"></i>인수인계 체크리스트</button><button class="mbtn" onclick="showCL('week1')"><i class="ti ti-checklist"></i>1주 후 자가 점검</button></div>`);
+    else if(type==='rnr')abm(`<div class="bbl">👤 <b>R&amp;R 가이드</b></div><div class="card" style="min-width:220px"><div class="ctitle">직무 선택</div><button class="mbtn" onclick="showRnr('현장소장')"><i class="ti ti-crown"></i>현장소장</button><button class="mbtn" onclick="showRnr('공무담당')"><i class="ti ti-file-text"></i>공무담당</button><button class="mbtn" onclick="showRnr('품질담당')"><i class="ti ti-microscope"></i>품질담당</button><button class="mbtn" onclick="showRnr('안전담당')"><i class="ti ti-shield-check"></i>안전담당</button><button class="mbtn" onclick="showRnr('공정담당')"><i class="ti ti-calendar"></i>공정담당</button></div>`);
+    else if(type==='cases')abm(`<div class="bbl">📂 <b>현장 문제 해결 사례 DB</b></div><div class="card" style="min-width:220px"><div class="ctitle">문제 유형 선택</div><button class="mbtn" onclick="showCase('coldjoint')"><i class="ti ti-clock-pause"></i>레미콘 지연 / 콜드조인트</button><button class="mbtn" onclick="showCase('slope')"><i class="ti ti-alert-triangle"></i>터파기 사면 붕괴 위험</button><button class="mbtn" onclick="showCase('labor')"><i class="ti ti-users-minus"></i>협력사 인력 급감 / 공정 지연</button><button class="mbtn" onclick="showCase('material')"><i class="ti ti-package-off"></i>자재 부족 대응</button></div>`);
+    else if(type==='best')showBest();
+    else if(type==='onboarding')showOnboard();
+    else if(type==='issue')abm(issueCard());
+    else if(type==='status')showStatus();
+    else if(type==='report')showReport();
+  },800);
+}
+// ═══ KW MAP ═══
+const KW_MAP=[
+  [['TF 구성','TF 운영','매뉴얼북','숙련자가 직접','현장 TF'],()=>{rsp(showTF,900)}],
+  [['콘크리트','타설 기준','타설 공정'],()=>{rsp(showConcrete,900)}],
+  [['콜드조인트'],()=>showCase('coldjoint',true)],
+  [['레미콘 지연','레미콘이 늦'],()=>showCase('coldjoint',true)],
+  [['사면 붕괴','터파기'],()=>showCase('slope',true)],
+  [['인력 급감','인력 이탈','협력사 인력'],()=>showCase('labor',true)],
+  [['자재 부족'],()=>showCase('material',true)],
+  [['일일 점검','오늘 점검'],()=>showCL('daily',true)],
+  [['안전 점검'],()=>showCL('safety',true)],
+  [['인수인계 체크'],()=>showCL('handover',true)],
+  [['체크리스트'],()=>sel('checklist',true)],
+  [['안전담당 승인','안전담당 권한','안전담당 역할'],()=>showRnr('안전담당',true)],
+  [['현장소장 권한'],()=>showRnr('현장소장',true)],
+  [['공무담당'],()=>showRnr('공무담당',true)],
+  [['품질담당'],()=>showRnr('품질담당',true)],
+  [['공정담당'],()=>showRnr('공정담당',true)],
+  [['보고 체계','누구한테 보고'],()=>showReport()],
+  [['우수 사례'],()=>showBest()],
+  [['처리 상태','접수 상태'],()=>showStatus()],
+  [['신규 반장','신규 인력','온보딩','첫날'],()=>showOnboard()],
+  [['이슈 접수','이슈'],()=>sel('issue',true)],
+  [['표준 프로세스'],()=>sel('standard',true)],
+  [['안전관리 프로세스'],()=>{rsp(showSafetyProc,900)}],
+  [['마감공사'],()=>showFinish()],
+  [['설비공사'],()=>showEquip()]
+];
+function findKw(text){for(const[kws,fn]of KW_MAP){if(kws.some(k=>text.includes(k)))return fn}return null;}
+// ═══ SEND ═══
+function qs(text){swt(text)}
+function send(){const el=document.getElementById('mi');const text=el.value.trim();if(!text)return;el.value='';el.style.height='auto';swt(text);}
+function swt(text){aum(text);const fn=findKw(text);if(fn){rsp(fn,950);}else{st();setTimeout(()=>{rt();abm(aiResponse(text));},1400);}}
+</script>
+</body>
+</html>
